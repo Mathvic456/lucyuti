@@ -83,7 +83,6 @@ function App() {
       <aside style={{
         width: '240px',
         flexShrink: 0,
-        display: 'flex',
         flexDirection: 'column',
         background: 'rgba(10,22,40,0.9)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
@@ -92,7 +91,7 @@ function App() {
         top: 0,
         height: '100vh',
         overflowY: 'auto',
-      }} className="hidden md:flex no-print">
+      }} className="desktop-only no-print">
         {/* Logo */}
         <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -179,7 +178,7 @@ function App() {
           {/* Logo / Page Title */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
             {/* Mobile Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }} className="md:hidden">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }} className="mobile-only">
               <div style={{
                 width: '30px', height: '30px', borderRadius: '8px',
                 background: 'linear-gradient(135deg, #14b8a6, #06b6d4)',
@@ -193,7 +192,7 @@ function App() {
               </span>
             </div>
             {/* Desktop page title */}
-            <div className="hidden md:block">
+            <div className="desktop-only-block">
               <h1 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#e2e8f0' }}>
                 {view === 'dashboard' && 'Dashboard'}
                 {view === 'form' && 'New Patient Analysis'}
@@ -212,7 +211,7 @@ function App() {
             </div>
             {/* Mobile hamburger button */}
             <button
-              className="md:hidden btn btn-ghost"
+              className="mobile-only btn btn-ghost"
               style={{ padding: '0.4rem 0.6rem', minHeight: '36px' }}
               onClick={() => setMobileNavOpen(prev => !prev)}
               aria-label="Toggle navigation"
@@ -231,7 +230,7 @@ function App() {
           <>
             {/* Dark backdrop overlay to dismiss drawer on tap outside */}
             <div
-              className="md:hidden"
+              className="mobile-only"
               onClick={() => setMobileNavOpen(false)}
               style={{
                 position: 'fixed',
@@ -242,7 +241,7 @@ function App() {
               }}
             />
             {/* Slide down drawer */}
-            <div className="md:hidden animate-slide-in-down" style={{
+            <div className="mobile-only animate-slide-in-down" style={{
               position: 'fixed',
               top: '60px',
               left: 0,
@@ -460,7 +459,7 @@ function App() {
         </main>
 
         {/* ===== MOBILE BOTTOM NAVIGATION BAR ===== */}
-        <nav className="md:hidden no-print" style={{
+        <nav className="mobile-only no-print" style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
@@ -471,7 +470,7 @@ function App() {
           backdropFilter: 'blur(20px)',
           display: 'flex',
           alignItems: 'center',
-          justify.content: 'space-around',
+          justifyContent: 'space-around',
           zIndex: 80,
           padding: '0 0.25rem',
         }}>

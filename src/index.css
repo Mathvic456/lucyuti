@@ -401,6 +401,47 @@ img, svg, canvas, iframe, video {
   }
 }
 
+/* ===== RESPONSIVE VISIBILITY ===== */
+/* Desktop sidebar: visible on md+, hidden on mobile */
+.desktop-only {
+  display: flex;
+}
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+/* Desktop block display only */
+.desktop-only-block {
+  display: block;
+}
+@media (max-width: 767px) {
+  .desktop-only-block {
+    display: none !important;
+  }
+}
+
+/* Mobile elements: visible on <md, hidden on md+ */
+.mobile-only {
+  /* display is set by inline styles or defaults */
+}
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* Small screen and up */
+.hidden-below-sm {
+  display: none;
+}
+@media (min-width: 640px) {
+  .hidden-below-sm {
+    display: block;
+  }
+}
+
 @media (max-width: 380px) {
   .btn {
     font-size: 0.8rem !important;

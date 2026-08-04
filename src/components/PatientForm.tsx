@@ -166,7 +166,7 @@ const PatientForm: React.FC<PatientFormProps> = ({ onSubmit, isLoading }) => {
                     : <Icon style={{ width: '16px', height: '16px', color: isActive ? 'white' : '#475569' }} />
                   }
                 </div>
-                <div className="hidden sm:block" style={{ textAlign: 'center' }}>
+                <div className="hidden-below-sm" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: isActive ? accent : isCompleted ? '#4ade80' : '#475569', transition: 'color 0.3s' }}>
                     {step.title}
                   </div>
