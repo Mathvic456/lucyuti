@@ -18,18 +18,31 @@
  */
 
 export interface PatientData {
-  age: number;
-  gender: 'male' | 'female';
-  urinePh: number;
-  specificGravity: number;
+  // Urinalysis Parameters
   leukocyteEsterase: 'negative' | 'trace' | 'plus1' | 'plus2' | 'plus3';
   nitrite: 'positive' | 'negative';
+  wbcUrinalysis: number;       // WBC /hpf in urinalysis
+  redBloodCell: number;        // RBC /hpf
+  bacteria: 'none' | 'few' | 'moderate' | 'many';
+  urinePh: number;
+  specificGravity: number;
   protein: string;
   glucose: string;
-  whiteBloodCell: number;
-  redBloodCell: number;
-  bilirubin: 'negative' | 'positive';
-  urobilinogen: string;
+  whiteBloodCell: number;      // Blood WBC ×10³/μL
+
+  // Blood Results & Vitals
+  serumCreatinine: number;     // mg/dL
+  temperature: number;         // °C
+  symptomDuration: number;     // days
+
+  // Patient Demographics & History
+  age: number;
+  gender: 'male' | 'female';
+  priorUti: 'yes' | 'no' | '';
+  catheterUse: 'yes' | 'no' | '';
+  pregnancy: 'yes' | 'no' | 'na' | '';
+
+  // Legacy symptom fields (kept for mock logic)
   dysuria: boolean;
   frequency: boolean;
   urgency: boolean;
@@ -107,32 +120,32 @@ function generateMockPrediction(patientData: PatientData): PredictionResult {
       weight: patientData.leukocyteEsterase !== 'negative' ? 0.28 : 0.08,
     },
     {
+      feature: 'WBC (urinalysis)',
+      weight: Math.min(0.22, (patientData.wbcUrinalysis || 0) / 40),
+    },
+    {
       feature: 'Nitrite',
-      weight: patientData.nitrite === 'positive' ? 0.26 : 0.06,
+      weight: patientData.nitrite === 'positive' ? 0.20 : 0.05,
     },
     {
-      feature: 'WBC Count',
-      weight: Math.min(0.18, patientData.whiteBloodCell / 50),
+      feature: 'Bacteria',
+      weight: patientData.bacteria === 'many' ? 0.16 : patientData.bacteria === 'moderate' ? 0.10 : patientData.bacteria === 'few' ? 0.05 : 0.01,
     },
     {
-      feature: 'Symptoms (Flank Pain)',
-      weight: patientData.flankPain ? 0.15 : 0.03,
+      feature: 'Blood WBC',
+      weight: Math.min(0.12, patientData.whiteBloodCell / 30),
     },
     {
-      feature: 'RBC Count / Haematuria',
-      weight: Math.min(0.12, patientData.redBloodCell / 50),
+      feature: 'Symptom Duration',
+      weight: Math.min(0.10, (patientData.symptomDuration || 0) / 20),
     },
     {
-      feature: 'Symptoms (Dysuria)',
-      weight: patientData.dysuria ? 0.1 : 0.02,
+      feature: 'RBC / Haematuria',
+      weight: Math.min(0.09, (patientData.redBloodCell || 0) / 50),
     },
     {
-      feature: 'Fever Present',
-      weight: patientData.fever ? 0.08 : 0.01,
-    },
-    {
-      feature: 'Protein Present',
-      weight: patientData.protein !== 'negative' ? 0.07 : 0.01,
+      feature: 'Prior UTI',
+      weight: patientData.priorUti === 'yes' ? 0.08 : 0.02,
     },
   ];
 

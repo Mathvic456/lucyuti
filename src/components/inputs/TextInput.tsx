@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { HelpCircle, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface TextInputProps {
   label: string;
+  sublabel?: string;
   type?: string;
   value: string | number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -18,6 +19,7 @@ interface TextInputProps {
 
 const TextInput: React.FC<TextInputProps> = ({
   label,
+  sublabel,
   type = 'text',
   value,
   onChange,
@@ -33,10 +35,22 @@ const TextInput: React.FC<TextInputProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.25rem',
+        fontSize: '0.78rem',
+        fontWeight: 500,
+        color: 'var(--text-label)',
+      }}>
         {label}
-        {required && <span style={{ color: '#f87171' }}>*</span>}
+        {sublabel && (
+          <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+            {sublabel}
+          </span>
+        )}
+        {required && <span style={{ color: 'var(--crimson)', marginLeft: '1px' }}>*</span>}
         {tooltip && (
           <div style={{ position: 'relative', display: 'inline-flex' }}>
             <button
@@ -44,10 +58,12 @@ const TextInput: React.FC<TextInputProps> = ({
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
               onClick={() => setShowTooltip(!showTooltip)}
-              style={{ color: '#475569', background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+              style={{ color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
               aria-label={`Help: ${label}`}
             >
-              <HelpCircle style={{ width: '13px', height: '13px' }} />
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-.5 3.5h1v4h-1V7z"/>
+              </svg>
             </button>
             {showTooltip && (
               <div className="tooltip-popup animate-fade-in">
@@ -71,16 +87,19 @@ const TextInput: React.FC<TextInputProps> = ({
           style={unit ? { paddingRight: '3.5rem' } : undefined}
         />
         {unit && (
-          <div style={{ position: 'absolute', right: '0.875rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', color: '#475569', fontWeight: 600, pointerEvents: 'none' }}>
+          <div style={{
+            position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+            fontSize: '0.72rem', color: '#9ca3af', fontWeight: 500, pointerEvents: 'none',
+          }}>
             {unit}
           </div>
         )}
       </div>
 
       {error && (
-        <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f87171' }}>
-          <AlertCircle style={{ width: '13px', height: '13px', flexShrink: 0 }} />
-          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{error}</span>
+        <div className="animate-fade-in" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#dc2626' }}>
+          <AlertCircle style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+          <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>{error}</span>
         </div>
       )}
     </div>

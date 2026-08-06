@@ -1,40 +1,30 @@
 import React, { useState } from 'react';
 import type { PatientData } from './services/predictionApi';
-import type { HistoryEntry } from './hooks/useHistory';
 import { usePrediction } from './hooks/usePrediction';
 import { useHistory } from './hooks/useHistory';
 import PatientForm from './components/PatientForm';
 import PredictionResult from './components/PredictionResult';
-import PredictionHistory from './components/PredictionHistory';
-import {
-  Activity,
-  Brain,
-  Clock,
-  BarChart3,
-  Shield,
-  Home,
-  Plus,
-  Menu,
-  X,
-  AlertCircle,
-  ChevronRight,
-} from 'lucide-react';
+import ModelAnalytics from './components/ModelAnalytics';
+import AboutPage from './components/AboutPage';
+import { AlertCircle, Microscope, Menu, X, ChevronRight } from 'lucide-react';
+import type { HistoryEntry } from './hooks/useHistory';
 
-type View = 'dashboard' | 'form' | 'result' | 'history';
+type Tab = 'input' | 'result' | 'analytics' | 'about';
 
 function App() {
-  const [view, setView] = useState<View>('dashboard');
+  const [activeTab, setActiveTab] = useState<Tab>('input');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedHistoryEntry, setSelectedHistoryEntry] = useState<HistoryEntry | null>(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [formCompletionPct, setFormCompletionPct] = useState(0);
   const { loading, error, result, predict, reset } = usePrediction();
-  const { entries, addEntry, removeEntry, clearHistory } = useHistory();
+  const { entries, addEntry } = useHistory();
 
   const handleFormSubmit = async (patientData: PatientData) => {
     try {
       const predictionResult = await predict(patientData);
       addEntry(patientData, predictionResult);
       setSelectedHistoryEntry(null);
-      setView('result');
+      setActiveTab('result');
     } catch (err) {
       console.error('Prediction failed:', err);
     }
@@ -43,469 +33,359 @@ function App() {
   const handleNewPrediction = () => {
     reset();
     setSelectedHistoryEntry(null);
-    setView('form');
+    setActiveTab('input');
   };
 
-  const handleSelectHistoryEntry = (entry: HistoryEntry) => {
-    setSelectedHistoryEntry(entry);
-    setView('result');
-  };
-
-  const navigateTo = (v: View) => {
-    setView(v);
-    setMobileNavOpen(false);
+  const switchTab = (tab: Tab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const stats = {
-    total: entries.length,
-    likelyUTI: entries.filter((e) => e.result.prediction === 'likely_uti').length,
-    unlikelyUTI: entries.filter((e) => e.result.prediction === 'unlikely_uti').length,
-    avgConfidence:
-      entries.length > 0
-        ? Math.round(entries.reduce((sum, e) => sum + e.result.confidence, 0) / entries.length)
-        : 0,
-  };
-
-  const navItems = [
-    { key: 'dashboard' as View, label: 'Dashboard', icon: Home },
-    { key: 'form' as View, label: 'New Analysis', icon: Plus },
-    { key: 'history' as View, label: `History${entries.length > 0 ? ` (${entries.length})` : ''}`, icon: Clock },
-  ];
-
-  // Active result: from history entry OR fresh form prediction
   const activeResult = selectedHistoryEntry?.result ?? result;
 
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--navy-950)', width: '100%', overflowX: 'hidden' }}>
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'input',     label: 'Patient Input' },
+    { key: 'result',    label: 'Prediction Result' },
+    { key: 'analytics', label: 'Model Analytics' },
+    { key: 'about',     label: 'About' },
+  ];
 
-      {/* ===== DESKTOP SIDEBAR ===== */}
-      <aside style={{
-        width: '240px',
-        flexShrink: 0,
-        flexDirection: 'column',
-        background: 'rgba(10,22,40,0.9)',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(20px)',
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      background: 'var(--page-bg)',
+      width: '100%',
+      overflowX: 'hidden',
+    }}>
+
+      {/* ════════════ HEADER — dark navy ════════════ */}
+      <header className="no-print" style={{
+        background: 'var(--navy-800)',
+        width: '100%',
         position: 'sticky',
         top: 0,
-        height: '100vh',
-        overflowY: 'auto',
-      }} className="desktop-only no-print">
-        {/* Logo */}
-        <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{
-              width: '42px', height: '42px', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #14b8a6, #06b6d4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(20,184,166,0.3)',
-              flexShrink: 0,
-            }}>
-              <Brain style={{ width: '22px', height: '22px', color: '#0a1628' }} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#e2e8f0', lineHeight: 1.2 }}>
-                UTI Decision
-              </div>
-              <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 500 }}>
-                Support System
-              </div>
-            </div>
-          </div>
-        </div>
+        zIndex: 50,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+      }}>
 
-        {/* Nav Items */}
-        <nav style={{ padding: '1rem 0.75rem', flex: 1 }}>
-          <div style={{ marginBottom: '0.375rem', padding: '0 0.25rem', fontSize: '0.65rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            Navigation
-          </div>
-          {navItems.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => navigateTo(key)}
-              className={`nav-link${view === key ? ' active' : ''}`}
-              style={{ width: '100%', marginBottom: '0.25rem', textAlign: 'left' }}
-            >
-              <Icon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
-              {label}
-              {view === key && (
-                <ChevronRight style={{ width: '14px', height: '14px', marginLeft: 'auto', color: '#14b8a6' }} />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        {/* Sidebar Footer */}
-        <div style={{ padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{
-            background: 'rgba(245,158,11,0.1)',
-            border: '1px solid rgba(245,158,11,0.2)',
-            borderRadius: '10px',
-            padding: '0.75rem',
-          }}>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-              <Shield style={{ width: '14px', height: '14px', color: '#fbbf24', flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '0.65rem', color: '#d97706', lineHeight: 1.5 }}>
-                For clinical decision support only. Not FDA approved.
-              </div>
-            </div>
-          </div>
-          <div style={{ marginTop: '0.75rem', fontSize: '0.65rem', color: '#334155', textAlign: 'center' }}>
-            v2.0 · AI Clinical Platform
-          </div>
-        </div>
-      </aside>
-
-      {/* ===== MAIN AREA ===== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
-
-        {/* ===== TOP BAR HEADER ===== */}
-        <header style={{
-          height: '60px',
+        {/* Top bar: logo + status + mobile hamburger button */}
+        <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 0.875rem',
-          background: 'rgba(10,22,40,0.92)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(20px)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          width: '100%',
+          padding: '0.65rem 1.25rem',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}>
-          {/* Logo / Page Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
-            {/* Mobile Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }} className="mobile-only">
-              <div style={{
-                width: '30px', height: '30px', borderRadius: '8px',
-                background: 'linear-gradient(135deg, #14b8a6, #06b6d4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <Brain style={{ width: '15px', height: '15px', color: '#0a1628' }} />
-              </div>
-              <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                UTI Decision
-              </span>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div style={{
+              width: '38px', height: '38px', borderRadius: '50%',
+              border: '2px solid var(--crimson-light)',
+              background: 'rgba(201,51,75,0.12)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Microscope style={{ width: '18px', height: '18px', color: 'var(--crimson-light)' }} />
             </div>
-            {/* Desktop page title */}
-            <div className="desktop-only-block">
-              <h1 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#e2e8f0' }}>
-                {view === 'dashboard' && 'Dashboard'}
-                {view === 'form' && 'New Patient Analysis'}
-                {view === 'result' && 'Prediction Result'}
-                {view === 'history' && 'Analysis History'}
-              </h1>
+            <div>
+              <div style={{
+                fontWeight: 800,
+                fontSize: '1rem',
+                color: '#ffffff',
+                lineHeight: 1.15,
+                letterSpacing: '-0.01em',
+              }}>
+                UTI-Predict
+              </div>
+              <div style={{
+                fontSize: '0.58rem',
+                color: 'rgba(255,255,255,0.4)',
+                fontWeight: 500,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}>
+                GA-GWO Hybrid Clinical Support
+              </div>
             </div>
           </div>
 
           {/* Right Header items */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-            {/* Online status badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.2rem 0.5rem', borderRadius: '999px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} className="animate-pulse-gentle" />
-              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#4ade80' }}>AI Online</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* Status indicators (desktop) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <div
+                className="animate-pulse-gentle"
+                style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#4ade80' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>
+                Model Online
+              </span>
             </div>
-            {/* Mobile hamburger button */}
+            <div className="desktop-only-block" style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
+              AUC 0.946
+            </div>
+
+            {/* Mobile Hamburger Button */}
             <button
-              className="mobile-only btn btn-ghost"
-              style={{ padding: '0.4rem 0.6rem', minHeight: '36px' }}
-              onClick={() => setMobileNavOpen(prev => !prev)}
-              aria-label="Toggle navigation"
+              className="mobile-only"
+              onClick={() => setMobileMenuOpen(prev => !prev)}
               type="button"
+              aria-label="Toggle navigation menu"
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '8px',
+                padding: '0.45rem',
+                color: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              {mobileNavOpen
-                ? <X style={{ width: '20px', height: '20px', color: '#2dd4bf' }} />
-                : <Menu style={{ width: '20px', height: '20px', color: '#e2e8f0' }} />
+              {mobileMenuOpen
+                ? <X style={{ width: '20px', height: '20px', color: 'var(--crimson-light)' }} />
+                : <Menu style={{ width: '20px', height: '20px' }} />
               }
             </button>
           </div>
-        </header>
+        </div>
 
-        {/* ===== MOBILE NAV OVERLAY & DRAWER ===== */}
-        {mobileNavOpen && (
-          <>
-            {/* Dark backdrop overlay to dismiss drawer on tap outside */}
-            <div
-              className="mobile-only"
-              onClick={() => setMobileNavOpen(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(5, 12, 24, 0.75)',
-                backdropFilter: 'blur(4px)',
-                zIndex: 90,
-              }}
-            />
-            {/* Slide down drawer */}
-            <div className="mobile-only animate-slide-in-down" style={{
-              position: 'fixed',
-              top: '60px',
-              left: 0,
-              right: 0,
-              zIndex: 100,
-              background: 'rgba(10,22,40,0.98)',
-              borderBottom: '1px solid rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(24px)',
-              padding: '1rem 0.875rem',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.8)',
-            }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem', paddingLeft: '0.5rem' }}>
-                Menu
-              </div>
-              {navItems.map(({ key, label, icon: Icon }) => (
-                <button
-                  key={key}
-                  onClick={() => navigateTo(key)}
-                  className={`nav-link${view === key ? ' active' : ''}`}
-                  style={{ width: '100%', marginBottom: '0.35rem', justifyContent: 'flex-start' }}
-                  type="button"
-                >
-                  <Icon style={{ width: '18px', height: '18px' }} />
-                  {label}
-                  {view === key && (
-                    <ChevronRight style={{ width: '14px', height: '14px', marginLeft: 'auto', color: '#14b8a6' }} />
-                  )}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ===== PAGE CONTENT ===== */}
-        <main style={{ flex: 1, padding: '1.25rem 0.875rem 4.5rem 0.875rem', maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-
-          {/* ─── DASHBOARD ─── */}
-          {view === 'dashboard' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} className="animate-fade-in">
-
-              {/* Hero */}
-              <div style={{ textAlign: 'center', padding: '1.5rem 0.25rem 1rem' }}>
-                <div className="badge badge-teal animate-slide-in-down" style={{ margin: '0 auto 1rem', display: 'inline-flex' }}>
-                  <Activity style={{ width: '12px', height: '12px' }} />
-                  AI Medical Intelligence
-                </div>
-                <h2 className="animate-slide-in-up delay-100" style={{
-                  fontSize: 'clamp(1.6rem, 5vw, 3rem)',
-                  fontWeight: 900,
-                  lineHeight: 1.15,
-                  marginBottom: '0.75rem',
-                  color: '#f1f5f9',
-                }}>
-                  Advanced UTI Risk
-                  <span className="gradient-text-teal" style={{ display: 'block' }}>Assessment Platform</span>
-                </h2>
-                <p className="animate-slide-in-up delay-200" style={{
-                  fontSize: '0.9rem', color: '#64748b', maxWidth: '580px', margin: '0 auto 1.5rem', lineHeight: 1.65
-                }}>
-                  Leverage machine learning to analyze patient urinalysis data and deliver
-                  evidence-based UTI predictions with clinical confidence.
-                </p>
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }} className="animate-slide-in-up delay-300">
-                  <button onClick={() => navigateTo('form')} className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.9rem' }} type="button">
-                    <Plus style={{ width: '16px', height: '16px', marginRight: '0.4rem' }} />
-                    Start New Analysis
-                  </button>
-                  {entries.length > 0 && (
-                    <button onClick={() => navigateTo('history')} className="btn btn-secondary" style={{ padding: '0.75rem 1.5rem', fontSize: '0.9rem' }} type="button">
-                      <Clock style={{ width: '16px', height: '16px', marginRight: '0.4rem' }} />
-                      History ({entries.length})
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Session Stats */}
-              {entries.length > 0 && (
-                <div className="animate-slide-in-up delay-400">
-                  <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-                    Session Analytics
-                  </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.65rem' }}>
-                    {[
-                      { label: 'Total Analyses', value: stats.total, color: '#22d3ee', icon: Activity },
-                      { label: 'Positive Cases', value: stats.likelyUTI, color: '#f87171', icon: AlertCircle },
-                      { label: 'Negative Cases', value: stats.unlikelyUTI, color: '#4ade80', icon: Shield },
-                      { label: 'Avg. Confidence', value: `${stats.avgConfidence}%`, color: '#a78bfa', icon: BarChart3 },
-                    ].map(({ label, value, color, icon: Icon }, i) => (
-                      <div key={label} className="stat-card animate-slide-in-up" style={{ animationDelay: `${0.4 + i * 0.06}s` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                          <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${color}30` }}>
-                            <Icon style={{ width: '15px', height: '15px', color }} />
-                          </div>
-                        </div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', lineHeight: 1 }}>{value}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.3rem', fontWeight: 500 }}>{label}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Feature Cards */}
-              <div className="animate-slide-in-up delay-500">
-                <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-                  Platform Features
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.875rem' }}>
-                  {[
-                    {
-                      title: 'AI-Powered Analysis',
-                      desc: 'GA-GWO hybrid tuned Random Forest trained on 50,000+ clinical cases for accurate UTI prediction.',
-                      icon: Brain,
-                      grad: 'linear-gradient(135deg, #14b8a6, #06b6d4)',
-                      glow: 'rgba(20,184,166,0.15)',
-                    },
-                    {
-                      title: 'Clinical Accuracy',
-                      desc: 'Validated models with 94.2% sensitivity and 87.1% specificity for decision support.',
-                      icon: Shield,
-                      grad: 'linear-gradient(135deg, #22c55e, #10b981)',
-                      glow: 'rgba(34,197,94,0.15)',
-                    },
-                    {
-                      title: 'Comprehensive Reports',
-                      desc: 'Detailed ROC curves, feature importance rankings, and confidence metrics for every patient.',
-                      icon: BarChart3,
-                      grad: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
-                      glow: 'rgba(139,92,246,0.15)',
-                    },
-                  ].map(({ title, desc, icon: Icon, grad, glow }, i) => (
-                    <div key={title} className="glass-card animate-slide-in-up" style={{ padding: '1.15rem', animationDelay: `${0.45 + i * 0.08}s` }}>
-                      <div style={{
-                        width: '38px', height: '38px', borderRadius: '10px',
-                        background: grad, boxShadow: `0 0 16px ${glow}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        marginBottom: '0.875rem',
-                      }}>
-                        <Icon style={{ width: '18px', height: '18px', color: 'white' }} />
-                      </div>
-                      <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1f5f9', marginBottom: '0.35rem' }}>{title}</h4>
-                      <p style={{ fontSize: '0.78rem', color: '#64748b', lineHeight: 1.55 }}>{desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── FORM ─── */}
-          {view === 'form' && (
-            <div className="animate-fade-in" style={{ maxWidth: '780px', margin: '0 auto', width: '100%' }}>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#f1f5f9', marginBottom: '0.25rem' }}>
-                  Patient Analysis
-                </h2>
-                <p style={{ color: '#64748b', fontSize: '0.82rem' }}>
-                  Enter patient information for AI-powered UTI risk assessment
-                </p>
-              </div>
-              <PatientForm onSubmit={handleFormSubmit} isLoading={loading} />
-              {error && (
-                <div className="animate-scale-in" style={{
-                  marginTop: '1rem',
-                  padding: '0.75rem 0.875rem',
-                  background: 'rgba(239,68,68,0.1)',
-                  border: '1px solid rgba(239,68,68,0.25)',
-                  borderRadius: '0.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.65rem',
-                }}>
-                  <AlertCircle style={{ width: '16px', height: '16px', color: '#f87171', flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontWeight: 700, color: '#f87171', fontSize: '0.8rem' }}>Analysis Error</div>
-                    <div style={{ color: '#fca5a5', fontSize: '0.75rem', marginTop: '0.1rem' }}>{error}</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ─── RESULT ─── */}
-          {view === 'result' && activeResult && (
-            <div className="animate-fade-in" style={{ width: '100%' }}>
-              <PredictionResult
-                result={activeResult}
-                onNewPrediction={handleNewPrediction}
-              />
-            </div>
-          )}
-
-          {/* Edge case: result view with no result */}
-          {view === 'result' && !activeResult && (
-            <div className="animate-fade-in" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-              <p style={{ color: '#64748b', marginBottom: '1rem', fontSize: '0.85rem' }}>No result to display.</p>
-              <button onClick={() => navigateTo('form')} className="btn btn-primary" style={{ padding: '0.65rem 1.35rem' }} type="button">
-                Start New Analysis
-              </button>
-            </div>
-          )}
-
-          {/* ─── HISTORY ─── */}
-          {view === 'history' && (
-            <div className="animate-fade-in" style={{ width: '100%' }}>
-              <PredictionHistory
-                entries={entries}
-                onRemove={removeEntry}
-                onClearAll={clearHistory}
-                onSelectEntry={handleSelectHistoryEntry}
-              />
-            </div>
-          )}
-        </main>
-
-        {/* ===== MOBILE BOTTOM NAVIGATION BAR ===== */}
-        <nav className="mobile-only no-print" style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '56px',
-          background: 'rgba(10,22,40,0.96)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          zIndex: 80,
-          padding: '0 0.25rem',
+        {/* Desktop Horizontal tab nav (hidden on mobile) */}
+        <nav className="desktop-only-block" style={{
+          padding: '0 1.25rem',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}>
-          {navItems.map(({ key, label, icon: Icon }) => {
-            const isActive = view === key;
-            return (
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            {tabs.map(({ key, label }) => (
               <button
                 key={key}
-                onClick={() => navigateTo(key)}
                 type="button"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '2px',
-                  background: 'none',
-                  border: 'none',
-                  color: isActive ? '#2dd4bf' : '#64748b',
-                  fontSize: '0.68rem',
-                  fontWeight: isActive ? 700 : 500,
-                  flex: 1,
-                  height: '100%',
-                  cursor: 'pointer',
-                  transition: 'color 0.2s',
-                }}
+                onClick={() => switchTab(key)}
+                className={`nav-tab${activeTab === key ? ' active' : ''}`}
               >
-                <Icon style={{ width: '18px', height: '18px', color: isActive ? '#2dd4bf' : '#64748b' }} />
-                <span>{label.split(' ')[0]}</span>
+                {label}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </nav>
+      </header>
 
-      </div>
+      {/* ════════════ MOBILE NAVIGATION DRAWER & OVERLAY ════════════ */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop overlay */}
+          <div
+            className="mobile-only no-print"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(14, 18, 32, 0.75)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 80,
+            }}
+          />
+          {/* Mobile slide-down menu */}
+          <div
+            className="mobile-only no-print animate-slide-in-down"
+            style={{
+              position: 'fixed',
+              top: '57px',
+              left: 0,
+              right: 0,
+              zIndex: 90,
+              background: 'var(--navy-900)',
+              borderBottom: '1px solid rgba(255,255,255,0.12)',
+              padding: '0.75rem 1rem 1rem 1rem',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div style={{
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.4)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginBottom: '0.65rem',
+              paddingLeft: '0.5rem',
+            }}>
+              Navigation Menu
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {tabs.map(({ key, label }) => {
+                const isActive = activeTab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => switchTab(key)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '0.5rem',
+                      border: isActive ? '1px solid var(--crimson-border)' : '1px solid transparent',
+                      background: isActive ? 'var(--crimson-bg)' : 'rgba(255,255,255,0.03)',
+                      color: isActive ? '#ffffff' : 'rgba(255,255,255,0.7)',
+                      fontSize: '0.9rem',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <span>{label}</span>
+                    {isActive && (
+                      <ChevronRight style={{ width: '16px', height: '16px', color: 'var(--crimson-light)' }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ════════════ MAIN CONTENT ════════════ */}
+      <main style={{
+        flex: 1,
+        padding: '1.75rem 1.25rem 3rem 1.25rem',
+        maxWidth: '960px',
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}>
+
+        {/* ─── PATIENT INPUT ─── */}
+        {activeTab === 'input' && (
+          <div className="animate-fade-in">
+            {/* Page heading + completion bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              marginBottom: '1.5rem',
+            }}>
+              <div>
+                <h1 style={{
+                  fontSize: '1.6rem',
+                  fontWeight: 800,
+                  color: 'var(--text-primary)',
+                  marginBottom: '0.25rem',
+                }}>
+                  Patient Clinical Data
+                </h1>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  Complete the urinalysis and clinical parameters below
+                </p>
+              </div>
+
+              {/* Form completion progress */}
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                  Form completion
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                  <div className="progress-bar-track">
+                    <div
+                      className="progress-bar-fill"
+                      style={{ width: `${formCompletionPct}%` }}
+                    />
+                  </div>
+                  <span style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    color: 'var(--text-primary)',
+                    minWidth: '32px',
+                  }}>
+                    {formCompletionPct}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <PatientForm
+              onSubmit={handleFormSubmit}
+              isLoading={loading}
+              onCompletionChange={setFormCompletionPct}
+            />
+
+            {error && (
+              <div className="animate-scale-in" style={{
+                marginTop: '1rem',
+                padding: '0.75rem 1rem',
+                background: 'rgba(220,38,38,0.06)',
+                border: '1px solid rgba(220,38,38,0.25)',
+                borderRadius: '0.625rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}>
+                <AlertCircle style={{ width: '16px', height: '16px', color: '#dc2626', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontWeight: 700, color: '#dc2626', fontSize: '0.82rem' }}>Analysis Error</div>
+                  <div style={{ color: '#b91c1c', fontSize: '0.78rem', marginTop: '0.1rem' }}>{error}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── PREDICTION RESULT ─── */}
+        {activeTab === 'result' && (
+          <div className="animate-fade-in">
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h1 style={{
+                fontSize: '1.6rem',
+                fontWeight: 800,
+                color: 'var(--text-primary)',
+                marginBottom: '0.25rem',
+              }}>
+                Prediction Result
+              </h1>
+            </div>
+            {activeResult ? (
+              <PredictionResult result={activeResult} onNewPrediction={handleNewPrediction} />
+            ) : (
+              <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔬</div>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.25rem', fontSize: '0.9rem' }}>
+                  No prediction yet. Run a patient analysis to see results here.
+                </p>
+                <button
+                  onClick={() => switchTab('input')}
+                  className="btn btn-run"
+                  type="button"
+                >
+                  Start Patient Input
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── MODEL ANALYTICS ─── */}
+        {activeTab === 'analytics' && (
+          <div className="animate-fade-in">
+            <ModelAnalytics />
+          </div>
+        )}
+
+        {/* ─── ABOUT ─── */}
+        {activeTab === 'about' && (
+          <div className="animate-fade-in">
+            <AboutPage />
+          </div>
+        )}
+
+      </main>
     </div>
   );
 }

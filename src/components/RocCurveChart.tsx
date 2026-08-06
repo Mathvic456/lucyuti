@@ -21,24 +21,24 @@ const CustomTooltip = ({ active, payload }: any) => {
     const diagEntry = payload.find((p: any) => p.dataKey === 'diag');
     return (
       <div style={{
-        background: 'rgba(10,22,40,0.97)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: '10px',
+        background: '#ffffff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '8px',
         padding: '0.65rem 0.875rem',
-        boxShadow: '0 16px 32px rgba(0,0,0,0.5)',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         minWidth: '150px',
       }}>
-        <p style={{ fontWeight: 700, color: '#94a3b8', fontSize: '0.7rem', marginBottom: '0.4rem' }}>
+        <p style={{ fontWeight: 700, color: '#6b7280', fontSize: '0.7rem', marginBottom: '0.4rem' }}>
           FPR: {payload[0]?.payload?.fpr}%
         </p>
         {rocEntry && (
-          <p style={{ fontSize: '0.78rem', color: '#22d3ee', fontWeight: 600 }}>
-            Model TPR: <span style={{ color: '#f1f5f9' }}>{rocEntry.value}%</span>
+          <p style={{ fontSize: '0.78rem', color: '#c9334b', fontWeight: 600 }}>
+            Model TPR: <span style={{ color: '#1a1a2e' }}>{rocEntry.value}%</span>
           </p>
         )}
         {diagEntry && (
-          <p style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>
-            Random: <span style={{ color: '#64748b' }}>{diagEntry.value}%</span>
+          <p style={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
+            Random: <span style={{ color: '#6b7280' }}>{diagEntry.value}%</span>
           </p>
         )}
       </div>
@@ -46,6 +46,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   }
   return null;
 };
+
 
 const RocCurveChart: React.FC<RocCurveChartProps> = ({ rocData }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -97,13 +98,13 @@ const RocCurveChart: React.FC<RocCurveChartProps> = ({ rocData }) => {
     <div>
       {/* AUC Badge Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 500 }}>ROC Curve — Discrimination Performance</div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500 }}>ROC Curve — Discrimination Performance</div>
         <div style={{
           padding: '0.25rem 0.75rem',
           borderRadius: '999px',
-          background: 'rgba(34,211,238,0.12)',
-          border: '1px solid rgba(34,211,238,0.25)',
-          fontSize: '0.78rem', fontWeight: 800, color: '#22d3ee',
+          background: 'rgba(201,51,75,0.08)',
+          border: '1px solid rgba(201,51,75,0.25)',
+          fontSize: '0.78rem', fontWeight: 800, color: 'var(--crimson)',
         }}>
           AUC = {auc.toFixed(3)}
         </div>
@@ -113,33 +114,33 @@ const RocCurveChart: React.FC<RocCurveChartProps> = ({ rocData }) => {
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: isMobile ? -15 : 0, bottom: 15 }}>
           <defs>
             <linearGradient id="rocFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.02} />
+              <stop offset="5%" stopColor="#c9334b" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#c9334b" stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="diagFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#475569" stopOpacity={0.12} />
-              <stop offset="95%" stopColor="#475569" stopOpacity={0.01} />
+              <stop offset="5%" stopColor="#9ca3af" stopOpacity={0.1} />
+              <stop offset="95%" stopColor="#9ca3af" stopOpacity={0.01} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
           <XAxis
             dataKey="fpr"
             type="number"
             domain={[0, 100]}
             ticks={[0, 20, 40, 60, 80, 100]}
-            tick={{ fontSize: 9, fill: '#475569' }}
+            tick={{ fontSize: 9, fill: '#6b7280' }}
             tickLine={false}
-            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-            label={isMobile ? undefined : { value: 'False Positive Rate (%)', position: 'insideBottom', offset: -10, fill: '#475569', fontSize: 10 }}
+            axisLine={{ stroke: 'rgba(0,0,0,0.08)' }}
+            label={isMobile ? undefined : { value: 'False Positive Rate (%)', position: 'insideBottom', offset: -10, fill: '#6b7280', fontSize: 10 }}
           />
           <YAxis
             type="number"
             domain={[0, 100]}
             ticks={[0, 20, 40, 60, 80, 100]}
-            tick={{ fontSize: 9, fill: '#475569' }}
+            tick={{ fontSize: 9, fill: '#6b7280' }}
             tickLine={false}
-            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-            label={isMobile ? undefined : { value: 'True Positive Rate (%)', angle: -90, position: 'insideLeft', offset: 10, fill: '#475569', fontSize: 10 }}
+            axisLine={{ stroke: 'rgba(0,0,0,0.08)' }}
+            label={isMobile ? undefined : { value: 'True Positive Rate (%)', angle: -90, position: 'insideLeft', offset: 10, fill: '#6b7280', fontSize: 10 }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
@@ -149,7 +150,7 @@ const RocCurveChart: React.FC<RocCurveChartProps> = ({ rocData }) => {
           <Area
             type="monotone"
             dataKey="diag"
-            stroke="#334155"
+            stroke="#d1d5db"
             strokeWidth={1}
             strokeDasharray="5 4"
             fill="url(#diagFill)"
@@ -161,7 +162,7 @@ const RocCurveChart: React.FC<RocCurveChartProps> = ({ rocData }) => {
           <Area
             type="monotone"
             dataKey="tpr"
-            stroke="#22d3ee"
+            stroke="#c9334b"
             strokeWidth={2.5}
             fill="url(#rocFill)"
             dot={false}
@@ -175,15 +176,15 @@ const RocCurveChart: React.FC<RocCurveChartProps> = ({ rocData }) => {
       <div style={{
         marginTop: '0.75rem',
         padding: '0.65rem 0.875rem',
-        background: 'rgba(34,211,238,0.06)',
-        border: '1px solid rgba(34,211,238,0.15)',
-        borderRadius: '10px',
+        background: 'rgba(201,51,75,0.05)',
+        border: '1px solid rgba(201,51,75,0.15)',
+        borderRadius: '8px',
         display: 'flex',
         gap: '0.5rem',
         alignItems: 'flex-start',
       }}>
-        <div style={{ fontSize: '0.72rem', color: '#64748b', lineHeight: 1.5 }}>
-          <span style={{ fontWeight: 700, color: '#22d3ee' }}>AUC = {auc.toFixed(3)}</span> — Score closer to 1.0 indicates
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          <span style={{ fontWeight: 700, color: 'var(--crimson)' }}>AUC = {auc.toFixed(3)}</span> — Score closer to 1.0 indicates
           superior discrimination. The dashed diagonal represents random guessing (AUC = 0.50).
         </div>
       </div>
