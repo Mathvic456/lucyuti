@@ -74,7 +74,7 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* Disclaimer */}
-      <div className="clinical-card animate-slide-in-up delay-200" style={{
+      {/* <div className="clinical-card animate-slide-in-up delay-200" style={{
         background: '#fffbeb',
         border: '1px solid rgba(202,138,4,0.3)',
         borderLeft: '4px solid #ca8a04',
@@ -93,11 +93,11 @@ const AboutPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* References / Contact */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
-        <div className="clinical-card animate-slide-in-up delay-300">
+        {/* <div className="clinical-card animate-slide-in-up delay-300">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
             <BookOpen style={{ width: '18px', height: '18px', color: 'var(--crimson)' }} />
             <h3 style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>Key References</h3>
@@ -120,9 +120,9 @@ const AboutPage: React.FC = () => {
               {ref}
             </div>
           ))}
-        </div>
+        </div> */}
 
-        <div className="clinical-card animate-slide-in-up delay-400">
+        {/* <div className="clinical-card animate-slide-in-up delay-400">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
             <Mail style={{ width: '18px', height: '18px', color: 'var(--crimson)' }} />
             <h3 style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>System Information</h3>
@@ -147,7 +147,7 @@ const AboutPage: React.FC = () => {
               <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>{v}</span>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
   );
