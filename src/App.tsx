@@ -4,7 +4,7 @@ import { usePrediction } from './hooks/usePrediction';
 import { useHistory } from './hooks/useHistory';
 import PatientForm from './components/PatientForm';
 import PredictionResult from './components/PredictionResult';
-import ModelAnalytics from './components/ModelAnalytics';
+// import ModelAnalytics from './components/ModelAnalytics';
 import AboutPage from './components/AboutPage';
 import { AlertCircle, Microscope, Menu, X, ChevronRight } from 'lucide-react';
 import type { HistoryEntry } from './hooks/useHistory';
@@ -47,7 +47,7 @@ function App() {
   const tabs: { key: Tab; label: string }[] = [
     { key: 'input',     label: 'Patient Input' },
     { key: 'result',    label: 'Prediction Result' },
-    { key: 'analytics', label: 'Model Analytics' },
+    // { key: 'analytics', label: 'Model Analytics' },
     { key: 'about',     label: 'About' },
   ];
 
@@ -372,11 +372,11 @@ function App() {
         )}
 
         {/* ─── MODEL ANALYTICS ─── */}
-        {activeTab === 'analytics' && (
+        {/* {activeTab === 'analytics' && (
           <div className="animate-fade-in">
             <ModelAnalytics />
           </div>
-        )}
+        )} */}
 
         {/* ─── ABOUT ─── */}
         {activeTab === 'about' && (

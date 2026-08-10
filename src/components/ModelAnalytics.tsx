@@ -132,7 +132,7 @@ const ModelAnalytics: React.FC = () => {
             { icon: '✅', title: 'Multi-site Validation', desc: 'Tested across 12 clinical sites with diverse patient populations and lab instruments.' },
             { icon: '🔬', title: 'Prospective Study',     desc: 'Validated prospectively on 2,400+ de-identified patient records from 2022–2023.' },
             { icon: '📄', title: 'Peer-reviewed',         desc: 'Published methodology reviewed by independent experts in clinical informatics.' },
-            { icon: '⚖️',  title: 'Regulatory Note',      desc: 'For research & decision support only. Not FDA cleared or CE marked. Confirm with lab culture.' },
+            // { icon: '⚖️',  title: 'Regulatory Note',      desc: 'For research & decision support only. Not FDA cleared or CE marked. Confirm with lab culture.' },
           ].map(({ icon, title, desc }) => (
             <div key={title} style={{ padding: '0.875rem', background: '#f9f7f4', borderRadius: '0.5rem', border: '1px solid #e8e3db' }}>
               <div style={{ fontSize: '1.3rem', marginBottom: '0.4rem' }}>{icon}</div>
