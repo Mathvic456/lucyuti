@@ -32,7 +32,7 @@ const AboutPage: React.FC = () => {
             </h2>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               UTI-Predict is an AI-assisted clinical decision support tool designed to assist clinicians in evaluating urinary tract infection risk.
-              It uses a Genetic Algorithm and Grey Wolf Optimiser (GA-GWO) hybrid to tune a Random Forest classifier trained on over 50,000 anonymised
+              It uses a Genetic Algorithm and Grey Wolf Optimiser (GA-GWO) hybrid to tune a Random Forest classifier trained on over 1,500+ anonymised
               clinical records. The system analyses urinalysis results, blood markers, and patient demographics to generate a probabilistic UTI prediction
               with feature-level SHAP explanations.
             </p>
