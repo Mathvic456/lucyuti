@@ -138,7 +138,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ result, onNewPredic
         </div>
       </div>
 
-      {/* ── AI Model Info ── */}
+      {/* ── AI Model Info ──
       <div className="clinical-card animate-slide-in-up delay-400">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
           <div style={{
@@ -194,7 +194,7 @@ const PredictionResult: React.FC<PredictionResultProps> = ({ result, onNewPredic
           </div>
         </div>
       </div>
-
+ */}
       {/* ── CTA ── */}
       <div className="animate-slide-in-up delay-500" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '0.5rem' }}>
         <button
